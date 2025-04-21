@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sound Share</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      transition: all 0.5s ease;
+    }
+
+    .header-logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      height: auto;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      max-width: 90%;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    h1 {
+      color: #6a6fb6;
+      margin-top: 10px;
+    }
+
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: #2196f3;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    button.secondary {
+      background-color: #ddd;
+      color: #333;
+    }
+
+    img.logo {
+      width: 80px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .device-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 20px 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    .device-list li {
+      padding: 10px;
+      margin: 5px 0;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .back-arrow {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      color: #2196f3;
+      cursor: pointer;
+    }
+
+    .notification {
+      background-color: #4caf50;
+      color: white;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 10px;
+      width: 100%;
+      text-align: center;
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Logo on top of the page -->
+  <img src="images/software-logo.png"  <!-- Screen 1: Login -->
+  <div id="loginScreen" class="screen active">
+    <img src="logo sound.jpg" >
+    <h1>SOUND SHARE</h1>
+    <p>Unite Through Shared Sound</p>
+    <input type="text" placeholder="Username" id="username">
+    <input type="password" placeholder="Password" id="password">
+    <button onclick="goToDeviceScreen()">Login</button>
+  </div>
+
+  <!-- Screen 2: Device Count Selection -->
+  <div id="deviceScreen" class="screen">
+    <img src="logo sound.jpg" class="logo" alt="Logo">
+    <h1>SOUND SHARE</h1>
+    <p>Select how many devices to connect:</p>
+    <button class="secondary" onclick="goToPairingScreen(2)">Connect 2 Devices</button>
+    <button class="secondary" onclick="goToPairingScreen(3)">Connect 3 Devices</button>
+    <button class="secondary" onclick="goToPairingScreen(5)">More...</button>
+    <span class="back-arrow" onclick="switchScreen('deviceScreen', 'loginScreen')">←</span>
+  </div>
+
+  <!-- Screen 3: First Bluetooth Device Pairing -->
+  <div id="pairingScreen" class="screen">
+    <img src="logo sound.jpg" class="logo" alt="Logo">
+    <h1>CHOOSE THE FIRST DEVICE</h1>
+    <p>You would like to connect</p>
+    <button onclick="connectBluetooth()">Pair a Bluetooth Device</button>
+    <p id="btStatus"></p>
+    <div id="notification" class="notification">Device connected successfully!</div>
+    <button onclick="goToSecondDevice()">Next →</button>
+    <span class="back-arrow" onclick="switchScreen('pairingScreen', 'deviceScreen')">←</span>
+  </div>
+
+  <!-- Screen 4: Second Bluetooth Device Pairing -->
+  <div id="secondPairingScreen" class="screen">
+    <img src="logo sound.jpg" class="logo" alt="Logo">
+    <h1>CHOOSE THE SECOND DEVICE</h1>
+    <p>Select another device to connect</p>
+    <button onclick="connectSecondBluetooth()">Pair Second Bluetooth Device</button>
+    <p id="btStatus2"></p>
+    <div id="notification2" class="notification">Second device connected successfully!</div>
+    <span class="back-arrow" onclick="switchScreen('secondPairingScreen', 'pairingScreen')">←</span>
+  </div>
+
+  <!-- Screen 5: Available Bluetooth Devices -->
+  <div id="deviceListScreen" class="screen">
+    <img src="logo sound.jpg" class="logo" alt="Logo">
+    <h1>Available Bluetooth Devices</h1>
+    <p>Choose a device to connect</p>
+    <ul id="deviceList" class="device-list"></ul>
+    <span class="back-arrow" onclick="switchScreen('deviceListScreen', 'pairingScreen')">←</span>
+  </div>
+
+  <script>
+    function switchScreen(from, to) {
+      document.getElementById(from).classList.remove("active");
+      document.getElementById(to).classList.add("active");
+    }
+
+    function goToDeviceScreen() {
+      switchScreen("loginScreen", "deviceScreen");
+    }
+
+    function goToPairingScreen(deviceCount) {
+      console.log(`User selected ${deviceCount} devices`);
+      switchScreen("deviceScreen", "pairingScreen");
+    }
+
+    function goToSecondDevice() {
+      switchScreen("pairingScreen", "secondPairingScreen");
+    }
+
+    async function connectBluetooth() {
+      const btStatus = document.getElementById("btStatus");
+      const notification = document.getElementById("notification");
+      btStatus.innerText = "Scanning...";
+      notification.style.display = "none";
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true
+        });
+        btStatus.innerText = `Connected to: ${device.name || "Unnamed Device"}`;
+        notification.style.display = "block";
+      } catch (error) {
+        btStatus.innerText = "Bluetooth pairing cancelled or failed.";
+        notification.style.display = "none";
+        console.error(error);
+      }
+    }
+
+    async function connectSecondBluetooth() {
+      const btStatus2 = document.getElementById("btStatus2");
+      const notification2 = document.getElementById("notification2");
+      btStatus2.innerText = "Scanning...";
+      notification2.style.display = "none";
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true
+        });
+        btStatus2.innerText = `Connected to: ${device.name || "Unnamed Device"}`;
+        notification2.style.display = "block";
+      } catch (error) {
+        btStatus2.innerText = "Bluetooth pairing cancelled or failed.";
+        notification2.style.display = "none";
+        console.error(error);
+      }
+    }
+
+    async function showAvailableDevices() {
+      const btStatus = document.getElementById("btStatus");
+      const deviceList = document.getElementById("deviceList");
+      deviceList.innerHTML = '';
+      btStatus.innerText = "Scanning for devices...";
+      try {
+        const devices = await navigator.bluetooth.getDevices();
+        if (devices.length > 0) {
+          devices.forEach(device => {
+            const listItem = document.createElement("li");
+            listItem.innerText = device.name || "Unnamed Device";
+            deviceList.appendChild(listItem);
+          });
+          switchScreen("pairingScreen", "deviceListScreen");
+        } else {
+          btStatus.innerText = "No devices found.";
+        }
+      } catch (error) {
+        btStatus.innerText = "Failed to retrieve devices.";
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>
